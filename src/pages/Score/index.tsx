@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Table, Button, Space, Modal, Form, Select, InputNumber, Message, Popconfirm, Typography, Input, Tag, Card, Grid, Statistic } from '@arco-design/web-react'
-import { IconPlus, IconSearch, IconRefresh } from '@arco-design/web-react/icon'
+import { Table, Button, Space, Modal, Form, Select, InputNumber, Message, Popconfirm, Typography, Tag, Card, Grid, Statistic } from '@arco-design/web-react'
+import { IconPlus } from '@arco-design/web-react/icon'
 import { scoreApi } from '../../api/score'
 import { studentApi } from '../../api/student'
 import { courseApi } from '../../api/course'
