@@ -89,7 +89,7 @@ export default function ClassRoomPage() {
   }
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', width: 60 },
+    { title: '序号', dataIndex: 'id', width: 80, render: (_v: unknown, _record: unknown, index: number) => (pagination.current - 1) * pagination.pageSize + index + 1 },
     { title: '班级名称', dataIndex: 'name' },
     { title: '所属学院', dataIndex: 'collegeId', render: (v: number) => collegeMap[v] || v },
     { title: '年级', dataIndex: 'grade' },
@@ -141,7 +141,10 @@ export default function ClassRoomPage() {
           pageSize: pagination.pageSize,
           total: pagination.total,
           showTotal: true,
+          sizeCanChange: true,
+          sizeOptions: [10, 20, 50, 100],
           onChange: (current, pageSize) => fetchData(current, pageSize),
+          onPageSizeChange: (size, current) => fetchData(current, size),
         }}
       />
       <Modal

@@ -88,10 +88,10 @@ export default function StudentPage() {
   }
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', width: 60 },
+    { title: '序号', dataIndex: 'id', width: 80, render: (_v: unknown, _record: unknown, index: number) => (pagination.current - 1) * pagination.pageSize + index + 1 },
     { title: '姓名', dataIndex: 'name' },
-    { title: '性别', dataIndex: 'gender', width: 60 },
-    { title: '年龄', dataIndex: 'age', width: 60 },
+    { title: '性别', dataIndex: 'gender' },
+    { title: '年龄', dataIndex: 'age' },
     { title: '班级', dataIndex: 'className' },
     { title: '专业', dataIndex: 'major' },
     { title: '手机号', dataIndex: 'phone' },
@@ -142,7 +142,10 @@ export default function StudentPage() {
           pageSize: pagination.pageSize,
           total: pagination.total,
           showTotal: true,
+          sizeCanChange: true,
+          sizeOptions: [10, 20, 50, 100],
           onChange: (current, pageSize) => fetchData(current, pageSize),
+          onPageSizeChange: (size, current) => fetchData(current, size),
         }}
       />
       <Modal

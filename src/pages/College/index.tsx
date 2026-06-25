@@ -80,7 +80,7 @@ export default function CollegePage() {
   }
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', width: 80 },
+    { title: '序号', dataIndex: 'id', width: 80, render: (_v: unknown, _record: unknown, index: number) => (pagination.current - 1) * pagination.pageSize + index + 1 },
     { title: '学院名称', dataIndex: 'name' },
     { title: '学院代码', dataIndex: 'code' },
     { title: '简介', dataIndex: 'description', ellipsis: true },
@@ -89,6 +89,11 @@ export default function CollegePage() {
     {
       title: '创建时间',
       dataIndex: 'createTime',
+      render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
+    },
+    {
+      title: '更新时间',
+      dataIndex: 'updateTime',
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
@@ -132,7 +137,10 @@ export default function CollegePage() {
           pageSize: pagination.pageSize,
           total: pagination.total,
           showTotal: true,
+          sizeCanChange: true,
+          sizeOptions: [10, 20, 50, 100],
           onChange: (current, pageSize) => fetchData(current, pageSize),
+          onPageSizeChange: (size, current) => fetchData(current, size),
         }}
       />
       <Modal

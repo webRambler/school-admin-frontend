@@ -58,11 +58,11 @@ export interface Student {
 
 export interface Teacher {
   id: number
+  collegeId: number
   name: string
   gender: string
   age: number
   title: string
-  department: string
   phone: string
   email: string
   createTime: string
@@ -71,6 +71,7 @@ export interface Teacher {
 
 export interface Course {
   id: number
+  teacherId: number
   name: string
   credit: number
   hours: number
@@ -259,26 +260,27 @@ export interface StudentUpdateRequest {
 }
 
 export interface TeacherCreateRequest {
+  collegeId: number
   name: string
   gender: string
   age: number
   title?: string
-  department: string
   phone?: string
   email?: string
 }
 
 export interface TeacherUpdateRequest {
+  collegeId?: number
   name?: string
   gender?: string
   age?: number
   title?: string
-  department?: string
   phone?: string
   email?: string
 }
 
 export interface CourseCreateRequest {
+  teacherId: number
   name: string
   credit: number
   hours: number
@@ -286,6 +288,7 @@ export interface CourseCreateRequest {
 }
 
 export interface CourseUpdateRequest {
+  teacherId?: number
   name?: string
   credit?: number
   hours?: number

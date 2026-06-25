@@ -148,15 +148,14 @@ export default function ScorePage() {
   }
 
   const columns = [
-    { title: '成绩ID', dataIndex: 'scoreId', width: 80 },
+    { title: '序号', dataIndex: 'scoreId', width: 80, render: (_v: unknown, _record: unknown, index: number) => (pagination.current - 1) * pagination.pageSize + index + 1 },
     { title: '学生', dataIndex: 'studentName' },
-    { title: '性别', dataIndex: 'gender', width: 60 },
+    { title: '性别', dataIndex: 'gender' },
     { title: '课程', dataIndex: 'courseName' },
-    { title: '学分', dataIndex: 'credit', width: 60 },
+    { title: '学分', dataIndex: 'credit' },
     {
       title: '成绩',
       dataIndex: 'score',
-      width: 80,
       render: (v: number) => <Tag color={scoreColor(v)}>{v}</Tag>,
     },
     { title: '考试类型', dataIndex: 'examType' },
@@ -206,7 +205,10 @@ export default function ScorePage() {
           pageSize: pagination.pageSize,
           total: pagination.total,
           showTotal: true,
+          sizeCanChange: true,
+          sizeOptions: [10, 20, 50, 100],
           onChange: (current, pageSize) => fetchData(current, pageSize),
+          onPageSizeChange: (size, current) => fetchData(current, size),
         }}
       />
 

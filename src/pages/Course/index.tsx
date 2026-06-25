@@ -75,10 +75,10 @@ export default function CoursePage() {
   }
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', width: 60 },
+    { title: '序号', dataIndex: 'id', width: 80, render: (_v: unknown, _record: unknown, index: number) => (pagination.current - 1) * pagination.pageSize + index + 1 },
     { title: '课程名称', dataIndex: 'name' },
-    { title: '学分', dataIndex: 'credit', width: 80 },
-    { title: '学时', dataIndex: 'hours', width: 80 },
+    { title: '学分', dataIndex: 'credit' },
+    { title: '学时', dataIndex: 'hours' },
     { title: '学期', dataIndex: 'semester' },
     {
       title: '创建时间',
@@ -126,7 +126,10 @@ export default function CoursePage() {
           pageSize: pagination.pageSize,
           total: pagination.total,
           showTotal: true,
+          sizeCanChange: true,
+          sizeOptions: [10, 20, 50, 100],
           onChange: (current, pageSize) => fetchData(current, pageSize),
+          onPageSizeChange: (size, current) => fetchData(current, size),
         }}
       />
       <Modal

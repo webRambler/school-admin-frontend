@@ -75,10 +75,10 @@ export default function TeacherPage() {
   }
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', width: 60 },
+    { title: '序号', dataIndex: 'id', width: 80, render: (_v: unknown, _record: unknown, index: number) => (pagination.current - 1) * pagination.pageSize + index + 1 },
     { title: '姓名', dataIndex: 'name' },
-    { title: '性别', dataIndex: 'gender', width: 60 },
-    { title: '年龄', dataIndex: 'age', width: 60 },
+    { title: '性别', dataIndex: 'gender' },
+    { title: '年龄', dataIndex: 'age' },
     { title: '职称', dataIndex: 'title' },
     { title: '院系', dataIndex: 'department' },
     { title: '手机号', dataIndex: 'phone' },
@@ -129,7 +129,10 @@ export default function TeacherPage() {
           pageSize: pagination.pageSize,
           total: pagination.total,
           showTotal: true,
+          sizeCanChange: true,
+          sizeOptions: [10, 20, 50, 100],
           onChange: (current, pageSize) => fetchData(current, pageSize),
+          onPageSizeChange: (size, current) => fetchData(current, size),
         }}
       />
       <Modal
