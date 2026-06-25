@@ -13,16 +13,16 @@ export default function StudentPage() {
   const [data, setData] = useState<StudentWithClassVO[]>([])
   const [loading, setLoading] = useState(false)
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 })
-  const [searchName, setSearchName] = useState('')
   const [modalVisible, setModalVisible] = useState(false)
   const [editRecord, setEditRecord] = useState<StudentWithClassVO | null>(null)
   const [classRooms, setClassRooms] = useState<ClassRoom[]>([])
   const [form] = Form.useForm()
+  const [searchForm] = Form.useForm()
 
-  const fetchData = useCallback(async (pageNum = 1, pageSize = 10) => {
+  const fetchData = useCallback(async (pageNum = 1, pageSize = 10, filters?: { gender?: string; className?: string }) => {
     setLoading(true)
     try {
-      const res = await studentApi.listWithClass({ pageNum, pageSize })
+      const res = await studentApi.listWithClass({ pageNum, pageSize, ...filters })
       const page = res.data as PageResult<StudentWithClassVO>
       setData(page.records)
       setPagination({ current: page.pageNum, pageSize: page.pageSize, total: page.total })
@@ -43,14 +43,23 @@ export default function StudentPage() {
     fetchClassRooms()
   }, [fetchData, fetchClassRooms])
 
+  const getFilters = () => {
+    const { name, gender, className } = searchForm.getFieldsValue()
+    return {
+      name: name?.trim() || undefined,
+      gender: gender || undefined,
+      className: className?.trim() || undefined,
+    }
+  }
+
   const handleSearch = async () => {
-    if (!searchName.trim()) { fetchData(); return }
     setLoading(true)
     try {
-      const res = await studentApi.search(searchName.trim())
-      // search returns Student[] — convert to StudentWithClassVO shape
-      setData(res.data.map((s) => ({ ...s, className: '', grade: '', major: '', teacher: '' })))
-      setPagination((prev) => ({ ...prev, current: 1, total: res.data.length }))
+      const filters = getFilters()
+      const res = await studentApi.listWithClass({ pageNum: 1, pageSize: pagination.pageSize, ...filters })
+      const page = res.data as PageResult<StudentWithClassVO>
+      setData(page.records)
+      setPagination({ current: page.pageNum, pageSize: page.pageSize, total: page.total })
     } finally {
       setLoading(false)
     }
@@ -118,20 +127,33 @@ export default function StudentPage() {
   return (
     <div>
       <Title heading={5} style={{ margin: '0 0 16px' }}>学生管理</Title>
-      <Space style={{ marginBottom: 16 }}>
-        <Input
-          placeholder="按姓名搜索"
-          value={searchName}
-          onChange={setSearchName}
-          onPressEnter={handleSearch}
-          allowClear
-          style={{ width: 200 }}
-          prefix={<IconSearch />}
-        />
-        <Button type="primary" icon={<IconSearch />} onClick={handleSearch}>搜索</Button>
-        <Button icon={<IconRefresh />} onClick={() => { setSearchName(''); fetchData() }}>重置</Button>
-        <Button type="primary" icon={<IconPlus />} onClick={handleAdd}>新增</Button>
-      </Space>
+      <Form form={searchForm} layout="inline" style={{ marginBottom: 16 }}>
+        <FormItem field="name" label="姓名">
+          <Input placeholder="请输入姓名" allowClear style={{ width: 160 }} />
+        </FormItem>
+        <FormItem field="gender" label="性别">
+          <Select placeholder="请选择" allowClear style={{ width: 120 }}>
+            <Select.Option value="男">男</Select.Option>
+            <Select.Option value="女">女</Select.Option>
+          </Select>
+        </FormItem>
+        <FormItem field="className" label="班级名称">
+          <Input placeholder="请输入班级名" allowClear style={{ width: 160 }} />
+        </FormItem>
+        <FormItem field="major" label="专业名称">
+          <Input placeholder="请输入专业名" allowClear style={{ width: 160 }} />
+        </FormItem>
+        <FormItem field="age" label="年龄">
+          <Input placeholder="请输入年龄" allowClear style={{ width: 160 }} />
+        </FormItem>
+        <FormItem>
+          <Space>
+            <Button type="primary" icon={<IconSearch />} onClick={handleSearch}>搜索</Button>
+            <Button icon={<IconRefresh />} onClick={() => { searchForm.resetFields(); fetchData() }}>重置</Button>
+            <Button type="primary" icon={<IconPlus />} onClick={handleAdd}>新增</Button>
+          </Space>
+        </FormItem>
+      </Form>
       <Table
         rowKey="id"
         columns={columns}
@@ -144,8 +166,8 @@ export default function StudentPage() {
           showTotal: true,
           sizeCanChange: true,
           sizeOptions: [10, 20, 50, 100],
-          onChange: (current, pageSize) => fetchData(current, pageSize),
-          onPageSizeChange: (size, current) => fetchData(current, size),
+          onChange: (current, pageSize) => fetchData(current, pageSize, getFilters()),
+          onPageSizeChange: (size, current) => fetchData(current, size, getFilters()),
         }}
       />
       <Modal

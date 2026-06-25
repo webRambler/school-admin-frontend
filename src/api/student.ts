@@ -10,6 +10,13 @@ import type {
   StudentCourseScoreVO,
 } from '../types'
 
+/** listWithClass 支持的查询参数 */
+export interface StudentListParams extends PageParams {
+  name?: string
+  gender?: string
+  className?: string
+}
+
 export const studentApi = {
   list: (params?: PageParams) =>
     request.get<unknown, ApiResult<PageResult<Student>>>('/students', { params }),
@@ -31,7 +38,7 @@ export const studentApi = {
     request.get<unknown, ApiResult<StudentWithClassVO>>(`/students/${id}/with-class`),
   listWithClassByClassId: (classId: number) =>
     request.get<unknown, ApiResult<StudentWithClassVO[]>>(`/students/class/${classId}/with-class`),
-  listWithClass: (params?: PageParams) =>
+  listWithClass: (params?: StudentListParams) =>
     request.get<unknown, ApiResult<PageResult<StudentWithClassVO>>>('/students/with-class', { params }),
   getCourseScores: (id: number) =>
     request.get<unknown, ApiResult<StudentCourseScoreVO[]>>(`/students/${id}/courses-scores`),
