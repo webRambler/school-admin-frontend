@@ -44,4 +44,6 @@ export const studentApi = {
     request.get<unknown, ApiResult<StudentCourseScoreVO[]>>(`/students/${id}/courses-scores`),
   countCourses: (id: number) =>
     request.get<unknown, ApiResult<number>>(`/students/${id}/course-count`),
+  listWithCondition: (params: Record<string, unknown>) =>
+    request.get<unknown, ApiResult<StudentWithClassVO[]>>('/students/search/condition', { params }),
 }

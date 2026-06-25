@@ -22,8 +22,8 @@ export default function StudentPage() {
   const fetchData = useCallback(async (pageNum = 1, pageSize = 10, filters?: { gender?: string; className?: string }) => {
     setLoading(true)
     try {
-      const res = await studentApi.listWithClass({ pageNum, pageSize, ...filters })
-      const page = res.data as PageResult<StudentWithClassVO>
+      const res = await studentApi.listWithCondition({ pageNum, pageSize, ...filters })
+      const page = res.data as unknown as PageResult<StudentWithClassVO>
       setData(page.records)
       setPagination({ current: page.pageNum, pageSize: page.pageSize, total: page.total })
     } finally {
@@ -39,16 +39,19 @@ export default function StudentPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData()
     fetchClassRooms()
   }, [fetchData, fetchClassRooms])
 
   const getFilters = () => {
-    const { name, gender, className } = searchForm.getFieldsValue()
+    const { name, gender, className, age, major } = searchForm.getFieldsValue()
     return {
       name: name?.trim() || undefined,
       gender: gender || undefined,
       className: className?.trim() || undefined,
+      age: age || undefined,
+      major: major?.trim() || undefined,
     }
   }
 
@@ -56,8 +59,8 @@ export default function StudentPage() {
     setLoading(true)
     try {
       const filters = getFilters()
-      const res = await studentApi.listWithClass({ pageNum: 1, pageSize: pagination.pageSize, ...filters })
-      const page = res.data as PageResult<StudentWithClassVO>
+      const res = await studentApi.listWithCondition({ pageNum: 1, pageSize: pagination.pageSize, ...filters })
+      const page = res.data as unknown as PageResult<StudentWithClassVO>
       setData(page.records)
       setPagination({ current: page.pageNum, pageSize: page.pageSize, total: page.total })
     } finally {
