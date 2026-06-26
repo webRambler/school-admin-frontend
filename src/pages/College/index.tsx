@@ -12,10 +12,10 @@ export default function CollegePage() {
   const [data, setData] = useState<College[]>([])
   const [loading, setLoading] = useState(false)
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 })
-  const [searchName, setSearchName] = useState('')
   const [modalVisible, setModalVisible] = useState(false)
   const [editRecord, setEditRecord] = useState<College | null>(null)
   const [form] = Form.useForm()
+  const [searchForm] = Form.useForm()
 
   const fetchData = useCallback(async (pageNum = 1, pageSize = 10) => {
     setLoading(true)
@@ -34,13 +34,15 @@ export default function CollegePage() {
   }, [fetchData])
 
   const handleSearch = async () => {
-    if (!searchName.trim()) {
+    const { name } = searchForm.getFieldsValue()
+    const trimmed = name?.trim()
+    if (!trimmed) {
       fetchData()
       return
     }
     setLoading(true)
     try {
-      const res = await collegeApi.search(searchName.trim())
+      const res = await collegeApi.search(trimmed)
       setData(res.data)
       setPagination((prev) => ({ ...prev, current: 1, total: res.data.length }))
     } finally {
@@ -113,20 +115,18 @@ export default function CollegePage() {
   return (
     <div>
       <Title heading={5} style={{ margin: '0 0 16px' }}>学院管理</Title>
-      <Space style={{ marginBottom: 16 }}>
-        <Input
-          placeholder="按名称搜索"
-          value={searchName}
-          onChange={setSearchName}
-          onPressEnter={handleSearch}
-          allowClear
-          style={{ width: 200 }}
-          prefix={<IconSearch />}
-        />
-        <Button type="primary" icon={<IconSearch />} onClick={handleSearch}>搜索</Button>
-        <Button icon={<IconRefresh />} onClick={() => { setSearchName(''); fetchData() }}>重置</Button>
-        <Button type="primary" icon={<IconPlus />} onClick={handleAdd}>新增</Button>
-      </Space>
+      <Form form={searchForm} layout="inline" style={{ marginBottom: 16 }}>
+        <FormItem field="name" label="学院名称">
+          <Input placeholder="请输入学院名称" allowClear style={{ width: 200 }} />
+        </FormItem>
+        <FormItem>
+          <Space>
+            <Button type="primary" icon={<IconSearch />} onClick={handleSearch}>搜索</Button>
+            <Button icon={<IconRefresh />} onClick={() => { searchForm.resetFields(); fetchData() }}>重置</Button>
+            <Button type="primary" icon={<IconPlus />} onClick={handleAdd}>新增</Button>
+          </Space>
+        </FormItem>
+      </Form>
       <Table
         rowKey="id"
         columns={columns}

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { AxiosRequestConfig, AxiosResponse } from 'axios'
+import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { Message } from '@arco-design/web-react'
 import { useAuthStore } from '../store/auth'
 import type { ApiResult } from '../types'
@@ -9,9 +9,38 @@ const request = axios.create({
   timeout: 10000,
 })
 
+// ============ 请求去重 ============
+const pendingRequestMap = new Map<string, AbortController>()
+
+function getRequestKey(config: AxiosRequestConfig): string {
+  const { method, url, params, data } = config
+  return [method, url, JSON.stringify(params), JSON.stringify(data)].join('&')
+}
+
+function addPendingRequest(config: InternalAxiosRequestConfig): void {
+  const key = getRequestKey(config)
+  if (pendingRequestMap.has(key)) {
+    // 取消之前的重复请求
+    const controller = pendingRequestMap.get(key)!
+    controller.abort()
+    pendingRequestMap.delete(key)
+  }
+  const controller = new AbortController()
+  config.signal = controller.signal
+  pendingRequestMap.set(key, controller)
+}
+
+function removePendingRequest(config: AxiosRequestConfig): void {
+  const key = getRequestKey(config)
+  pendingRequestMap.delete(key)
+}
+
 // 请求拦截器
 request.interceptors.request.use(
   (config) => {
+    // 添加请求去重
+    addPendingRequest(config)
+
     const { accessToken, refreshToken } = useAuthStore.getState()
     if (accessToken) {
       config.headers.Authorization = accessToken
@@ -40,6 +69,9 @@ function onRefreshFailed() {
 // 响应拦截器：解包 ApiResult，直接返回 data 部分
 request.interceptors.response.use(
   (response: AxiosResponse) => {
+    // 请求完成，移除待处理记录
+    removePendingRequest(response.config)
+
     const res = response.data as ApiResult
     if (res.code !== 200) {
       Message.error(res.message || '请求失败')
@@ -48,6 +80,16 @@ request.interceptors.response.use(
     return res as never
   },
   async (error) => {
+    // 请求完成（无论成功失败），移除待处理记录
+    if (error.config) {
+      removePendingRequest(error.config)
+    }
+
+    // 如果是被取消的请求，不显示错误提示
+    if (axios.isCancel(error)) {
+      return Promise.reject(error)
+    }
+
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean }
 
     if (

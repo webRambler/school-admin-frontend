@@ -14,8 +14,8 @@ export const courseApi = {
     request.get<unknown, ApiResult<PageResult<Course>>>('/courses', { params }),
   getById: (id: number) =>
     request.get<unknown, ApiResult<Course>>(`/courses/${id}`),
-  search: (name: string) =>
-    request.get<unknown, ApiResult<Course[]>>('/courses/search', { params: { name } }),
+  search: (params: object) =>
+    request.get<unknown, ApiResult<PageResult<Course>>>('/courses/search', { params }),
   listByCredit: (credit: number) =>
     request.get<unknown, ApiResult<Course[]>>(`/courses/credit/${credit}`),
   listBySemester: (semester: string) =>

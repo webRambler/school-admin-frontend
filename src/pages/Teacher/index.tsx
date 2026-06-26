@@ -12,10 +12,10 @@ export default function TeacherPage() {
   const [data, setData] = useState<Teacher[]>([])
   const [loading, setLoading] = useState(false)
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 })
-  const [searchName, setSearchName] = useState('')
   const [modalVisible, setModalVisible] = useState(false)
   const [editRecord, setEditRecord] = useState<Teacher | null>(null)
   const [form] = Form.useForm()
+  const [searchForm] = Form.useForm()
 
   const fetchData = useCallback(async (pageNum = 1, pageSize = 10) => {
     setLoading(true)
@@ -32,10 +32,12 @@ export default function TeacherPage() {
   useEffect(() => { fetchData() }, [fetchData])
 
   const handleSearch = async () => {
-    if (!searchName.trim()) { fetchData(); return }
+    const { name } = searchForm.getFieldsValue()
+    const trimmed = name?.trim()
+    if (!trimmed) { fetchData(); return }
     setLoading(true)
     try {
-      const res = await teacherApi.search(searchName.trim())
+      const res = await teacherApi.search(trimmed)
       setData(res.data)
       setPagination((prev) => ({ ...prev, current: 1, total: res.data.length }))
     } finally {
@@ -105,20 +107,18 @@ export default function TeacherPage() {
   return (
     <div>
       <Title heading={5} style={{ margin: '0 0 16px' }}>教师管理</Title>
-      <Space style={{ marginBottom: 16 }}>
-        <Input
-          placeholder="按姓名搜索"
-          value={searchName}
-          onChange={setSearchName}
-          onPressEnter={handleSearch}
-          allowClear
-          style={{ width: 200 }}
-          prefix={<IconSearch />}
-        />
-        <Button type="primary" icon={<IconSearch />} onClick={handleSearch}>搜索</Button>
-        <Button icon={<IconRefresh />} onClick={() => { setSearchName(''); fetchData() }}>重置</Button>
-        <Button type="primary" icon={<IconPlus />} onClick={handleAdd}>新增</Button>
-      </Space>
+      <Form form={searchForm} layout="inline" style={{ marginBottom: 16 }}>
+        <FormItem field="name" label="姓名">
+          <Input placeholder="请输入姓名" allowClear style={{ width: 200 }} />
+        </FormItem>
+        <FormItem>
+          <Space>
+            <Button type="primary" icon={<IconSearch />} onClick={handleSearch}>搜索</Button>
+            <Button icon={<IconRefresh />} onClick={() => { searchForm.resetFields(); fetchData() }}>重置</Button>
+            <Button type="primary" icon={<IconPlus />} onClick={handleAdd}>新增</Button>
+          </Space>
+        </FormItem>
+      </Form>
       <Table
         rowKey="id"
         columns={columns}
