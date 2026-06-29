@@ -32,7 +32,7 @@ export default function CoursePage() {
 
   useEffect(() => {
     void fetchData()
-  }, [])
+  }, [fetchData])
 
   const handleSearch = async () => {
     try {
@@ -75,6 +75,10 @@ export default function CoursePage() {
     }
     setModalVisible(false)
     fetchData()
+  }
+
+  const handleChange = (page: number, size: number) => {
+    setPagination({ ...pagination, current: page, pageSize: size })
   }
 
   const columns = [
@@ -141,8 +145,7 @@ export default function CoursePage() {
           showTotal: true,
           sizeCanChange: true,
           sizeOptions: [10, 20, 50, 100],
-          onChange: (current, pageSize) => fetchData(current, pageSize),
-          onPageSizeChange: (size, current) => fetchData(current, size),
+          onChange: handleChange,
         }}
       />
       <Modal

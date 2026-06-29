@@ -159,7 +159,7 @@ export default function TeacherPage() {
           <FormItem label="职称" field="title">
             <Input placeholder="请输入职称" maxLength={30} />
           </FormItem>
-          <FormItem label="院系" field="department" rules={editRecord ? [] : [{ required: true, message: '请输入院系' }]}>
+          <FormItem label="院系" field="department">
             <Input placeholder="请输入院系" maxLength={50} />
           </FormItem>
           <FormItem label="手机号" field="phone">

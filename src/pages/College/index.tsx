@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback } from 'react'
-import { Table, Button, Space, Modal, Form, Input, Message, Popconfirm, Typography } from '@arco-design/web-react'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { Table, Button, Space, Modal, Form, Input, AutoComplete, Message, Popconfirm, Typography } from '@arco-design/web-react'
 import { IconPlus, IconSearch, IconRefresh } from '@arco-design/web-react/icon'
 import dayjs from 'dayjs'
 import { collegeApi } from '../../api/college'
+import { teacherApi } from '../../api/teacher'
 import type { College, CollegeCreateRequest, CollegeUpdateRequest, PageResult } from '../../types'
 
 const { Title } = Typography
@@ -16,6 +17,47 @@ export default function CollegePage() {
   const [editRecord, setEditRecord] = useState<College | null>(null)
   const [form] = Form.useForm()
   const [searchForm] = Form.useForm()
+
+  // 院长搜索相关
+  const [teacherOptions, setTeacherOptions] = useState<unknown[]>([])
+  const [teacherLoading, setTeacherLoading] = useState(false)
+  const refFetchId = useRef<number>(0)
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
+
+  const handleTeacherSearch = useCallback((inputValue: string) => {
+    console.log('handleTeacherSearch', inputValue)
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    if (!inputValue?.trim()) {
+      setTeacherOptions([])
+      return
+    }
+    searchTimerRef.current = setTimeout(() => {
+      refFetchId.current = Date.now()
+      const fetchId = refFetchId.current
+      setTeacherLoading(true)
+      const params: unknown = {
+        name: inputValue.trim()
+      }
+      teacherApi.search(params)
+        .then((res) => {
+          if (refFetchId.current === fetchId) {
+            setTeacherOptions(res.data)
+          }
+        })
+        .catch(() => {
+          if (refFetchId.current === fetchId) setTeacherOptions([])
+        })
+        .finally(() => {
+          if (refFetchId.current === fetchId) setTeacherLoading(false)
+        })
+    }, 300)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    }
+  }, [])
 
   const fetchData = useCallback(async (pageNum = 1, pageSize = 10) => {
     setLoading(true)
@@ -70,6 +112,8 @@ export default function CollegePage() {
 
   const handleOk = async () => {
     const values = await form.validate()
+    console.log(values, 777)
+    debugger
     if (editRecord) {
       await collegeApi.update(editRecord.id, values as CollegeUpdateRequest)
       Message.success('更新成功')
@@ -86,8 +130,9 @@ export default function CollegePage() {
     { title: '学院名称', dataIndex: 'name' },
     { title: '学院代码', dataIndex: 'code' },
     { title: '简介', dataIndex: 'description', ellipsis: true },
-    { title: '院长', dataIndex: 'dean' },
-    { title: '联系电话', dataIndex: 'phone' },
+    { title: '学院联系电话', dataIndex: 'phone' },
+    { title: '院长', dataIndex: 'deanName' },
+    { title: '院长联系电话', dataIndex: 'deanPhone' },
     {
       title: '创建时间',
       dataIndex: 'createTime',
@@ -161,8 +206,22 @@ export default function CollegePage() {
           <FormItem label="简介" field="description">
             <Input.TextArea placeholder="请输入简介" maxLength={200} />
           </FormItem>
-          <FormItem label="院长" field="dean">
-            <Input placeholder="请输入院长姓名" maxLength={20} />
+          <FormItem label="院长" field="deanId">
+            <AutoComplete
+              placeholder="请输入院长姓名搜索"
+              loading={teacherLoading}
+              onSearch={handleTeacherSearch}
+              filterOption={false}
+              allowClear
+            >
+              {
+                teacherOptions.map((t: any) => (
+                  <AutoComplete.Option key={t?.id} value={String(t?.id)}>
+                    {t?.name}（{t?.title}）
+                  </AutoComplete.Option>
+                ))
+              }
+            </AutoComplete>
           </FormItem>
           <FormItem label="联系电话" field="phone">
             <Input placeholder="请输入联系电话" maxLength={20} />

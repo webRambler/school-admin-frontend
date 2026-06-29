@@ -213,7 +213,7 @@ export interface CollegeCreateRequest {
   name: string
   code: string
   description?: string
-  dean?: string
+  deanId?: string
   phone?: string
 }
 
@@ -221,7 +221,7 @@ export interface CollegeUpdateRequest {
   name?: string
   code?: string
   description?: string
-  dean?: string
+  deanId?: string
   phone?: string
 }
 

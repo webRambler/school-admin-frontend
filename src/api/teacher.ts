@@ -13,8 +13,8 @@ export const teacherApi = {
     request.get<unknown, ApiResult<PageResult<Teacher>>>('/teachers', { params }),
   getById: (id: number) =>
     request.get<unknown, ApiResult<Teacher>>(`/teachers/${id}`),
-  search: (name: string) =>
-    request.get<unknown, ApiResult<Teacher[]>>('/teachers/search', { params: { name } }),
+  search: (params: unknown) =>
+    request.get<unknown, ApiResult<Teacher[]>>('/teachers/search', { params }),
   listByDepartment: (department: string) =>
     request.get<unknown, ApiResult<Teacher[]>>(`/teachers/department/${department}`),
   listByTitle: (title: string) =>
